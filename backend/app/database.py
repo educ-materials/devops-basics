@@ -6,6 +6,13 @@ DATABASE_PATH = Path(__file__).parent.parent / "data" / "database.db"
 
 
 def get_connection(database_path=DATABASE_PATH):
+    database_path = Path(database_path)
+
+    database_path.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
     connection = sqlite3.connect(database_path)
 
     connection.row_factory = sqlite3.Row

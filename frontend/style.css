@@ -44,3 +44,9 @@ li {
     padding: 12px;
     border-bottom: 1px solid #ddd;
 }
+
+.task-actions {
+    display: flex;
+    gap: 5px;
+    margin-left: auto;
+}

@@ -43,14 +43,16 @@ function renderTasks(tasks) {
 
         li.innerHTML = `
             <span>${task.title}</span>
-
-            <button onclick="editTask(${task.id}, '${escapeHtml(task.title)}')">
-                Edit
-            </button>
-
-            <button onclick="deleteTask(${task.id})">
-                Delete
-            </button>
+        
+            <div class="task-actions">
+                <button onclick="editTask(${task.id}, '${escapeHtml(task.title)}')">
+                    Edit
+                </button>
+        
+                <button onclick="deleteTask(${task.id})">
+                    Delete
+                </button>
+            </div>
         `;
 
         list.appendChild(li);

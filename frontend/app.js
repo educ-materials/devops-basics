@@ -1,4 +1,6 @@
-const API_URL = "http://localhost:8000/api/tasks";
+const API_URL = "https://devops-basics-l2bn.onrender.com/api/tasks";
+
+// const API_URL = "http://localhost:8000/api/tasks";
 
 const form = document.getElementById("task-form");
 const input = document.getElementById("task-input");
@@ -81,7 +83,6 @@ form.addEventListener("submit", async (event) => {
 
     input.value = "";
 
-    // Reload tasks from the database.
     loadTasks();
 });
 
@@ -101,7 +102,6 @@ async function deleteTask(id) {
         throw new Error("Failed to delete task");
     }
 
-    // Reload tasks from the database.
     loadTasks();
 }
 

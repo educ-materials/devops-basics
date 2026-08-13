@@ -1,9 +1,11 @@
+import sqlite3
+from typing import Annotated
+
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from app.database import get_connection, init_database
-
 
 app = FastAPI(title="DevOps Basics API")
 
@@ -24,7 +26,6 @@ app.add_middleware(
 # -----------------------------
 # Database
 # -----------------------------
-
 def get_db():
     connection = get_connection()
 
@@ -34,8 +35,12 @@ def get_db():
         connection.close()
 
 
-init_database()
+DbConnection = Annotated[
+    sqlite3.Connection,
+    Depends(get_db),
+]
 
+init_database()
 
 # -----------------------------
 # Request models
@@ -55,7 +60,7 @@ class TaskUpdate(BaseModel):
 # -----------------------------
 
 @app.get("/api/tasks")
-def get_tasks(connection=Depends(get_db)):
+def get_tasks(connection: DbConnection):
 
     rows = connection.execute("""
         SELECT id, title, completed
@@ -73,7 +78,7 @@ def get_tasks(connection=Depends(get_db)):
 @app.post("/api/tasks", status_code=201)
 def create_task(
     task: TaskCreate,
-    connection=Depends(get_db),
+    connection: DbConnection,
 ):
 
     cursor = connection.execute(
@@ -108,7 +113,7 @@ def create_task(
 def update_task(
     task_id: int,
     task: TaskUpdate,
-    connection=Depends(get_db),
+    connection: DbConnection,
 ):
 
     cursor = connection.execute(
@@ -151,7 +156,7 @@ def update_task(
 @app.delete("/api/tasks/{task_id}", status_code=204)
 def delete_task(
     task_id: int,
-    connection=Depends(get_db),
+    connection: DbConnection,
 ):
 
     cursor = connection.execute(

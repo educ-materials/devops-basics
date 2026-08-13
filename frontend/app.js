@@ -12,16 +12,20 @@ const list = document.getElementById("task-list");
 // -----------------------------
 
 async function loadTasks() {
+    try {
+        const response = await fetch(API_URL);
 
-    const response = await fetch(API_URL);
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
 
-    if (!response.ok) {
-        throw new Error("Failed to load tasks");
+        const tasks = await response.json();
+
+        renderTasks(tasks);
+
+    } catch (error) {
+        console.error("Failed to load tasks:", error);
     }
-
-    const tasks = await response.json();
-
-    renderTasks(tasks);
 }
 
 
@@ -39,6 +43,10 @@ function renderTasks(tasks) {
 
         li.innerHTML = `
             <span>${task.title}</span>
+
+            <button onclick="editTask(${task.id}, '${escapeHtml(task.title)}')">
+                Edit
+            </button>
 
             <button onclick="deleteTask(${task.id})">
                 Delete
@@ -64,27 +72,79 @@ form.addEventListener("submit", async (event) => {
         return;
     }
 
-    const response = await fetch(API_URL, {
+    try {
 
-        method: "POST",
+        const response = await fetch(API_URL, {
 
-        headers: {
-            "Content-Type": "application/json"
-        },
+            method: "POST",
 
-        body: JSON.stringify({
-            title: title
-        })
-    });
+            headers: {
+                "Content-Type": "application/json"
+            },
 
-    if (!response.ok) {
-        throw new Error("Failed to create task");
+            body: JSON.stringify({
+                title: title
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        input.value = "";
+
+        await loadTasks();
+
+    } catch (error) {
+        console.error("Failed to create task:", error);
+    }
+});
+
+
+// -----------------------------
+// Edit task
+// -----------------------------
+
+async function editTask(id, currentTitle) {
+
+    const newTitle = prompt("Edit task:", currentTitle);
+
+    if (newTitle === null) {
+        return;
     }
 
-    input.value = "";
+    const title = newTitle.trim();
 
-    loadTasks();
-});
+    if (!title) {
+        return;
+    }
+
+    try {
+
+        const response = await fetch(`${API_URL}/${id}`, {
+
+            method: "PUT",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+                title: title,
+                completed: false
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        await loadTasks();
+
+    } catch (error) {
+        console.error("Failed to update task:", error);
+    }
+}
 
 
 // -----------------------------
@@ -93,16 +153,37 @@ form.addEventListener("submit", async (event) => {
 
 async function deleteTask(id) {
 
-    const response = await fetch(`${API_URL}/${id}`, {
+    try {
 
-        method: "DELETE"
-    });
+        const response = await fetch(`${API_URL}/${id}`, {
 
-    if (!response.ok) {
-        throw new Error("Failed to delete task");
+            method: "DELETE"
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        await loadTasks();
+
+    } catch (error) {
+        console.error("Failed to delete task:", error);
     }
+}
 
-    loadTasks();
+
+// -----------------------------
+// Simple HTML escaping
+// -----------------------------
+
+function escapeHtml(value) {
+
+    return value
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
 }
 
 
